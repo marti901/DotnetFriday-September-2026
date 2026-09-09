@@ -1,45 +1,50 @@
+using Dapr;
+using Microsoft.EntityFrameworkCore;
+using MoneyBook.BackgroundProcessor;
+using MonkeyBook.Shared;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// This service is the only one that writes to the database.
+builder.AddNpgsqlDbContext<MonkeyBookDbContext>("monkeybookdb");
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+	app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// Dapr delivers the events as cloud events and asks this endpoint for the subscriptions.
+app.UseCloudEvents();
+app.MapSubscribeHandler();
 
-var summaries = new[]
+app.MapPost("/post-created", [Topic("pubsub", "post-created")] async (
+	Post post,
+	MonkeyBookDbContext dbContext,
+	ILogger<Program> logger) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+	if (await dbContext.Posts.AnyAsync(x => x.Id == post.Id))
+	{
+		logger.LogInformation("Post {PostId} was already stored, skipping.", post.Id);
+		return Results.Ok();
+	}
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+	dbContext.Posts.Add(post);
+	await dbContext.SaveChangesAsync();
+
+	logger.LogInformation("Stored post {PostId} of monkey {MonkeyId}.", post.Id, post.MonkeyId);
+
+	return Results.Ok();
 })
-.WithName("GetWeatherForecast");
+.WithName("HandlePostCreated");
+
+await MonkeyBookDatabase.MigrateAndSeedAsync(app.Services);
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

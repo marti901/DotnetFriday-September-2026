@@ -1,6 +1,11 @@
 @MonkeyBook.PostsApi_HostAddress = http://localhost:5233
 
-GET {{MonkeyBook.PostsApi_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{MonkeyBook.PostsApi_HostAddress}}/post
+Content-Type: application/json
+
+{
+  "monkeyId": "11111111-1111-1111-1111-111111111111",
+  "message": "Hello from George!"
+}
 
 ###

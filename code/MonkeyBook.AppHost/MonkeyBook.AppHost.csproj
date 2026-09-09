@@ -15,4 +15,10 @@
     <ProjectReference Include="..\MonkeyBook.PostsApi\MonkeyBook.PostsApi.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.5.3" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="13.5.3" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Dapr" Version="13.5.1-beta.748" />
+  </ItemGroup>
+
 </Project>

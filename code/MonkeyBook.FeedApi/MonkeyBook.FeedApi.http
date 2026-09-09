@@ -1,6 +1,6 @@
 @MonkeyBook.FeedApi_HostAddress = http://localhost:5156
 
-GET {{MonkeyBook.FeedApi_HostAddress}}/weatherforecast/
+GET {{MonkeyBook.FeedApi_HostAddress}}/feed
 Accept: application/json
 
 ###
