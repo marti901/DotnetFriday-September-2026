@@ -7,6 +7,8 @@ builder.AddServiceDefaults();
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddFrontendCors(builder.Configuration);
+
 // This service only reads, so nothing needs to be tracked.
 builder.AddNpgsqlDbContext<MonkeyBookDbContext>(
 	"monkeybookdb",
@@ -20,6 +22,8 @@ if (app.Environment.IsDevelopment())
 {
 	app.MapOpenApi();
 }
+
+app.UseFrontendCors();
 
 app.MapGet("/feed", async (MonkeyBookDbContext dbContext) =>
 {

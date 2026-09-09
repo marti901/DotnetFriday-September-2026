@@ -1,0 +1,93 @@
+name: Deploy to Azure
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_RESOURCE_GROUP: rg-monkeybook-dev
+  AZURE_LOCATION: westeurope
+  ENVIRONMENT_NAME: dev
+  NAME_PREFIX: monkeybook
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: code/MonkeyBook.Frontend/package-lock.json
+
+      # Requires an app registration with federated credentials, see infra/README.md.
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create the resource group
+        run: az group create --name "$AZURE_RESOURCE_GROUP" --location "$AZURE_LOCATION" --output none
+
+      - name: Deploy the infrastructure
+        id: infra
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name monkeybook-infra \
+            --template-file infra/main.bicep \
+            --parameters infra/main.parameters.json \
+            --parameters namePrefix="$NAME_PREFIX" environmentName="$ENVIRONMENT_NAME" location="$AZURE_LOCATION" postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
+            --query properties.outputs --output json)
+
+          for key in postsApiName feedApiName backgroundProcessorName staticWebAppName feedApiUrl postsApiUrl frontendUrl; do
+            echo "$key=$(echo "$outputs" | jq -r ".$key.value")" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Publish and deploy the services
+        run: |
+          set -e
+          deploy_service () {
+            project="$1"
+            app="$2"
+            dotnet publish "code/$project/$project.csproj" -c Release -o "artifacts/$project" --nologo
+            (cd "artifacts/$project" && zip -qr "../$project.zip" .)
+            az webapp deploy --resource-group "$AZURE_RESOURCE_GROUP" --name "$app" --src-path "artifacts/$project.zip" --type zip --output none
+          }
+
+          deploy_service MonkeyBook.PostsApi "${{ steps.infra.outputs.postsApiName }}"
+          deploy_service MonkeyBook.FeedApi "${{ steps.infra.outputs.feedApiName }}"
+          deploy_service MoneyBook.BackgroundProcessor "${{ steps.infra.outputs.backgroundProcessorName }}"
+
+      - name: Build the frontend
+        working-directory: code/MonkeyBook.Frontend
+        run: |
+          npm ci
+          npm run build
+          cat > dist/config.json <<JSON
+          {
+            "feedApiUrl": "${{ steps.infra.outputs.feedApiUrl }}",
+            "postsApiUrl": "${{ steps.infra.outputs.postsApiUrl }}"
+          }
+          JSON
+
+      - name: Deploy the frontend
+        run: |
+          token=$(az staticwebapp secrets list --name "${{ steps.infra.outputs.staticWebAppName }}" --resource-group "$AZURE_RESOURCE_GROUP" --query properties.apiKey --output tsv)
+          npx --yes @azure/static-web-apps-cli deploy code/MonkeyBook.Frontend/dist --deployment-token "$token" --env production
+
+      - name: Summary
+        run: echo "Frontend ${{ steps.infra.outputs.frontendUrl }}" >> "$GITHUB_STEP_SUMMARY"

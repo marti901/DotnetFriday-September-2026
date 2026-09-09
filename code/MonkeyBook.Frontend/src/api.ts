@@ -1,3 +1,5 @@
+import { feedApiUrl, postsApiUrl } from './config'
+
 export interface FeedPost {
   id: string
   monkeyId: string
@@ -12,7 +14,7 @@ export interface MonkeyProfile {
 }
 
 export async function getFeed(): Promise<FeedPost[]> {
-  const response = await fetch('/api/feed')
+  const response = await fetch(feedApiUrl('/feed'))
 
   if (!response.ok) {
     throw new Error('The feed is stuck in a tree.')
@@ -22,7 +24,7 @@ export async function getFeed(): Promise<FeedPost[]> {
 }
 
 export async function getMonkey(monkeyId: string): Promise<MonkeyProfile> {
-  const response = await fetch(`/api/monkeys/${monkeyId}`)
+  const response = await fetch(feedApiUrl(`/monkeys/${monkeyId}`))
 
   if (!response.ok) {
     throw new Error('That monkey is not in the troop.')
@@ -32,7 +34,7 @@ export async function getMonkey(monkeyId: string): Promise<MonkeyProfile> {
 }
 
 export async function createPost(monkeyId: string, message: string): Promise<void> {
-  const response = await fetch('/api/post', {
+  const response = await fetch(postsApiUrl('/post'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ monkeyId, message }),
