@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: code/MonkeyBook.Frontend/package-lock.json
 
       # Requires an app registration with federated credentials, see infra/README.md.
-      - uses: azure/login@v2
+      - uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
