@@ -39,6 +39,20 @@ app.MapGet("/feed", async (MonkeyBookDbContext dbContext) =>
 })
 .WithName("GetFeed");
 
+// The frontend uses this to show the name of the monkey that is posting.
+app.MapGet("/monkeys/{id:guid}", async (Guid id, MonkeyBookDbContext dbContext) =>
+{
+	var monkey = await dbContext.Monkeys
+		.Where(monkey => monkey.Id == id)
+		.Select(monkey => new MonkeyProfile(monkey.Id, monkey.Name))
+		.FirstOrDefaultAsync();
+
+	return monkey is null ? Results.NotFound() : Results.Ok(monkey);
+})
+.WithName("GetMonkey");
+
 app.Run();
 
 public record FeedPost(Guid Id, Guid MonkeyId, string MonkeyName, string Message, DateTime Created);
+
+public record MonkeyProfile(Guid Id, string Name);

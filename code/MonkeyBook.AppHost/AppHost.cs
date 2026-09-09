@@ -21,15 +21,24 @@ var backgroundProcessor = builder
 	.WithDaprSidecar(sidecar => sidecar.WithReference(pubSub));
 
 // Publishes the post created events, has no database access.
-builder
+var postsApi = builder
 	.AddProject<Projects.MonkeyBook_PostsApi>("monkeybook-postsapi")
 	.WaitFor(redis)
 	.WithDaprSidecar(sidecar => sidecar.WithReference(pubSub));
 
 // Only reads from the database, waits for the processor to apply the migrations.
-builder
+var feedApi = builder
 	.AddProject<Projects.MonkeyBook_FeedApi>("monkeybook-feedapi")
 	.WithReference(monkeyBookDb)
 	.WaitFor(backgroundProcessor);
+
+// The Vue frontend, its vite dev server proxies the calls to both apis.
+builder
+	.AddViteApp("monkeybook-frontend", "../MonkeyBook.Frontend")
+	.WithNpm(install: false)
+	.WithReference(feedApi)
+	.WithReference(postsApi)
+	.WaitFor(feedApi)
+	.WithExternalHttpEndpoints();
 
 builder.Build().Run();

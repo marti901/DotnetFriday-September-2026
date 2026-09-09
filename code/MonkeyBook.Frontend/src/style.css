@@ -1,0 +1,39 @@
+:root {
+  --jungle-dark: #12301c;
+  --jungle: #1f4d2b;
+  --jungle-light: #3d7a44;
+  --bark: #5b3a21;
+  --bark-light: #7d5335;
+  --banana: #f4c430;
+  --banana-soft: #ffe9a8;
+  --cream: #fdf6e3;
+
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  color: var(--jungle-dark);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--jungle);
+  /* Leaves and vines in the background of the jungle. */
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(61, 122, 68, 0.9) 0 60px, transparent 61px),
+    radial-gradient(circle at 80% 45%, rgba(61, 122, 68, 0.7) 0 90px, transparent 91px),
+    radial-gradient(circle at 45% 80%, rgba(18, 48, 28, 0.8) 0 120px, transparent 121px),
+    repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0 12px, transparent 12px 34px);
+  background-attachment: fixed;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+textarea {
+  font-family: inherit;
+}
