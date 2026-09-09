@@ -1,0 +1,18 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.5.3">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>2905432c-90f0-4329-ad63-06f1b84d89f0</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MoneyBook.BackgroundProcessor\MoneyBook.BackgroundProcessor.csproj" />
+    <ProjectReference Include="..\MonkeyBook.FeedApi\MonkeyBook.FeedApi.csproj" />
+    <ProjectReference Include="..\MonkeyBook.PostsApi\MonkeyBook.PostsApi.csproj" />
+  </ItemGroup>
+
+</Project>

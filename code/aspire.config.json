@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "MonkeyBook.AppHost/MonkeyBook.AppHost.csproj"
+  }
+}

@@ -1,0 +1,6 @@
+@MonkeyBook.PostsApi_HostAddress = http://localhost:5233
+
+GET {{MonkeyBook.PostsApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="MoneyBook.BackgroundProcessor/MoneyBook.BackgroundProcessor.csproj" />
+  <Project Path="MonkeyBook.AppHost/MonkeyBook.AppHost.csproj" />
+  <Project Path="MonkeyBook.FeedApi/MonkeyBook.FeedApi.csproj" />
+  <Project Path="MonkeyBook.PostsApi/MonkeyBook.PostsApi.csproj" />
+  <Project Path="MonkeyBook.ServiceDefaults/MonkeyBook.ServiceDefaults.csproj" />
+  <Project Path="MonkeyBook.Shared/MonkeyBook.Shared.csproj" Id="ebd00aed-1fea-4d2e-9a35-fc7159e0511b" />
+</Solution>
