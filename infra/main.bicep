@@ -369,7 +369,7 @@ resource backgroundProcessorSettings 'Microsoft.Web/sites/config@2024-11-01' = {
 module chaosExperiment 'modules/chaos-experiment.bicep' = {
   scope: resourceGroup()
   params: {
-    backgroundProcessorName: backgroundProcessor.name
+    backgroundProcessorName: backgroundProcessorName
   }
 }
 
